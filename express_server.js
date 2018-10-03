@@ -13,6 +13,7 @@ let urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+
 function generateRandomString(){
   return "12345".split('').map(function()
     {return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt
@@ -26,7 +27,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase};
+  let templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render("urls_index", templateVars);
 })
 
@@ -40,12 +44,16 @@ app.post("/urls", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"]
+  }
   res.render("urls_new");
 });
 
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
+    username: req.cookies["username"],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
