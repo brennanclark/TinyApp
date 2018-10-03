@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<h1> <%= urls %> </h1>
 <head>
     <tittle>TinyApp</tittle>
 </head>
 <body>
+  <h2>Our URLS are as follows...</h2>
+  <ul>
 
+    <% for (var key in urls) { %>
+      <li> <%= key %> - <%= urls[key] %> </li>
+    <% }; %>
+
+  </ul>
 
 </body>
 </html>
