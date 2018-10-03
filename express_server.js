@@ -8,19 +8,17 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 let urlDatabase = {
-  "b2xVn2": "http://wwww.lighthouselabs.ca",
-  "9sm5xK": "http://wwww.google.com"
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
 };
 
 function generateRandomString(){
-  return "123456".split('').map(function()
+  return "12345".split('').map(function()
     {return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt
-    (Math.floor(62*Math.random()));}).join('');
+    (Math.floor(62*Math.random()));}).join('') + Math.floor(9*Math.random());
   //random link generator found online at stack overflow "https://stackoverflow.com/questions/1349404
   ///generate-random-string-characters-in-javascript/26682781"
-
 }
-
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -44,12 +42,21 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  res.send("Ok");
+  let shortURL = generateRandomString();
+
+  let newlongURL = req.body.longURL
+  urlDatabase[shortURL] = newlongURL;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+
+  res.redirect(longURL);
 });
 
 app.get("/hello", (req, res) =>{
