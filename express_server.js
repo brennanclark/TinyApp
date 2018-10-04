@@ -26,7 +26,11 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/register", ())
+app.get("/register", (req, res) => {
+
+  res.render("registration_new");
+
+});
 
 app.get("/urls", (req, res) => {
   let templateVars = {
@@ -34,7 +38,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
-})
+});
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
