@@ -26,6 +26,8 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/register", ())
+
 app.get("/urls", (req, res) => {
   let templateVars = {
     username: req.cookies["username"],
