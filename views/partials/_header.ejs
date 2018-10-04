@@ -5,8 +5,14 @@
    <h1> SUP SHORTY </h1>
 </header>
 
-<form method="POST" action="/login %>"> <button type="submit" class="btn btn-primary">Submit</button>
-  <input type="text" name="username" placeholder="Username" style="width: 300px">
-</form>
+<% if (username) { %>
+  <p> Logged in as: <%= username %> </p>
+  <form method="POST" action="/logout %>">
+  <button type="submit" class="btn btn-primary">Logout</button>
+<% } else { %>
 
-<h3> <%= username %> </h3> <form method="POST" action="/login %>"> <button type="submit" class="btn btn-primary">Submit</button>
+  <form method="POST" action="/login %>">
+      <button type="submit" class="btn  btn-primary">Submit</button>
+      <input type="text" name="username" placeholder="Username" style="width: 300px">
+  </form>
+<% } %>
