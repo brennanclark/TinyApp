@@ -1,18 +1,18 @@
 
-
-
 <header>
-   <h1> SUP SHORTY </h1>
+   <h1> SHORTIFY </h1>
 </header>
 
 <% if (username) { %>
-  <p> Logged in as: <%= username %> </p>
+  <p> Logged in as: <%= username.id %> </p>
   <form method="POST" action="/logout %>">
   <button type="submit" class="btn btn-primary">Logout</button>
+
 <% } else { %>
 
-  <form method="POST" action="/login %>">
-      <button type="submit" class="btn  btn-primary">Submit</button>
-      <input type="text" name="username" placeholder="Username" style="width: 300px">
-  </form>
+  <p>You are not logged in.</p>
+
+  <p><a href="/login">Login</a>  |  <a href="/register">Register</a></p>
+
 <% } %>
+
