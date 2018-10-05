@@ -30,32 +30,22 @@ function generateRandomString(){
   return "12345".split('').map(function()
     {return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt
     (Math.floor(62*Math.random()));}).join('') + Math.floor(9*Math.random());
-  //random link generator found online at stack overflow "https://stackoverflow.com/questions/1349404
+  //random link generator found online at stackoverflow "https://stackoverflow.com/questions/1349404
   ///generate-random-string-characters-in-javascript/26682781"
 };
 
-function checkForExistingEmail (email) {
+function getUserByEmail (email) {
   for (let userID in users) {
-    let existingEmail = users[userID].email
-
+    let user = users[userID];
+    console.log("one suer", user, email, user.email === email);
+    let existingEmail = user.email;
     if (email === existingEmail){
-      return true;
+      return user;
     }
   }
-  return false;
+  return undefined;
 };
 
-function checkPassword (password) {
-
-  for (let userID in users) {
-    let storedPassword = users[userID].password
-
-    if (password === storedPassword){
-      return true;
-    }
-  }
-  return false;
-}
 
 //the root should eventually be the home page
 app.get("/", (req, res) => {
@@ -64,7 +54,7 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   let templateVars = {
-    username: users[req.cookies["user_ID"]],
+    user: users[req.cookies["user_id"]],
     urls: urlDatabase
   };
   res.render("urls_index", templateVars);
@@ -72,7 +62,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: users[req.cookies["user_ID"]]
+    user: users[req.cookies["user_id"]]
   }
 
   res.render("urls_new",templateVars);
@@ -80,7 +70,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
-    username: users[req.cookies["user_ID"]],
+    user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
@@ -117,16 +107,16 @@ app.post("/register", (req, res) => {
     res.status(400).send('Email or password empty');
     return
   }
-  if (checkForExistingEmail(req.body.email))  {
+  if (getUserByEmail(req.body.email))  {
     res.status(400).send('Email already exists');
     return
   }
   users[randomID] = {
-  id: randomID,
-  email: req.body.email,
-  password: req.body.password
+    id: randomID,
+    email: req.body.email,
+    password: req.body.password
   };
-  res.cookie("user_ID", randomID);
+  res.cookie("user_id", randomID);
   res.redirect("/urls");
   console.log(users);
 });
@@ -139,7 +129,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect("/urls");
 });
 
@@ -150,13 +140,22 @@ app.post("/urls/:id", (req, res) => {
 
 app.post("/login", (req, res) => {
 
-  if (!checkForExistingEmail(req.body.username)){
+  const user = getUserByEmail(req.body.email);
+
+
+  if (!user){
     res.status(403).send('Email not registered');
     return
   }
 
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
+  //if the password that is given does not equal the password stored
+  if (user.password !== req.body.password){
+    res.status(403).send('Incorrect password');
+    return
+  }
+
+  res.cookie('user_id', user.id);
+  res.redirect("/");
 });
 
 app.post("/urls/:id/delete", (req, res) =>{
