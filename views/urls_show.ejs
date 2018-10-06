@@ -6,14 +6,25 @@
 </head>
 <body>
 
-  <h1> ShortURL: <%= shortURL %> </h1>
-  <h4> Shrotened from: <%= longURL %> </h4>
 
-  <label for="newURL"> Enter a New URL </label>
+  <% if(!user) { %>
 
-  <form method="POST" action="/urls/<%= shortURL %>"> <button type="submit" class="btn btn-primary">Update</button>
-  <input type="text" name="newURL" placeholder="http//" style="width: 300px">
-  </form>
+  <p> You must be logged in to see shortened URLS </p>
+
+  <% } %>
+
+
+  <% if(user) { %>
+
+    <h1> ShortURL: <%= shortURL %> </h1>
+    <h4> Shrotened from: <%= longURL %> </h4>
+
+    <label for="newURL"> Enter a New URL </label>
+
+    <form method="POST" action="/urls/<%= shortURL %>"> <button type="submit" class="btn btn-primary">Update</button>
+    <input type="text" name="newURL" placeholder="http//" style="width: 300px">
+    </form>
+  <% } %>
 
 </body>
 </html>

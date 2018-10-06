@@ -1,5 +1,6 @@
 let express = require("express");
 let cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 let app = express();
 let PORT = 8080;
 const bodyParser = require("body-parser");
@@ -7,6 +8,8 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
+
+//---------------------------------------DATABASES-------------------------------
 
 let urlDatabase = {
     "b2xVn2": {
@@ -32,6 +35,8 @@ var users = {
   }
 };
 
+//------------------------------FUNCTIONS-----------------------------------
+
 function generateRandomString(){
   return "12345".split('').map(function()
     {return 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'.charAt
@@ -51,6 +56,17 @@ function getUserByEmail (email) {
   return undefined;
 };
 
+function urlsForUser(id) {
+  const newObj = {};
+  for (let key in urlDatabase) {
+    const currentUserID = urlDatabase[key].userID
+    if (currentUserID && currentUserID === id){
+      newObj[key] =  urlDatabase[key];
+    }
+  }
+  return newObj;
+};
+
 
 //---------------------------------HOME--------------------------------
 
@@ -61,7 +77,7 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase
+    urls: urlsForUser(req.cookies.user_id)
   };
   res.render("urls_index", templateVars);
 });
@@ -73,14 +89,15 @@ app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   let newlongURL = req.body.longURL;
   let userID = req.body.id
-  console.log("shortURL", shortURL);
 
   //this will have the userID as another key value pair
   urlDatabase[shortURL] = {
     userID: userID,
-    longURL: newlongURL
+    longURL: newlongURL,
+    userID: res.cookie("user_id")
   };
-  //res.redirect(`/urls/${shortURL}`);
+
+
   res.redirect('/urls');
 
 });
@@ -89,6 +106,7 @@ app.post("/urls", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
+
   let templateVars = {
     user: users[req.cookies["user_id"]]
   }
@@ -105,14 +123,37 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     user: users[req.cookies["user_id"]],
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id].longURL
   };
   res.render("urls_show", templateVars);
 });
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.newURL
+  const urlInDataBase = urlDatabase[req.params.id]
+  if (urlDatabase && urlInDataBase.userID === req.cookies.user_id){
+    urlDatabase[req.params.id] = req.body.newURL
+  }
   res.redirect("/urls");
+});
+
+//---------------------------------DELETE--------------------------------
+
+app.post("/urls/:id/delete", (req, res) =>{
+  const urlInDataBase = urlDatabase[req.params.id];
+  if (urlInDataBase && urlInDataBase.userID === req.cookies.user_id) {
+    delete urlDatabase[req.params.id];
+  }
+      res.redirect("/urls")
+
+});
+
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(longURL);
 });
 
 //---------------------------------REGISTER--------------------------------
@@ -123,6 +164,9 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   let randomID = generateRandomString();
+
+  let password = req.body.password
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   if (req.body.email === '' || req.body.password === '') {
     res.status(400).send('Email or password empty');
@@ -136,11 +180,11 @@ app.post("/register", (req, res) => {
   users[randomID] = {
     id: randomID,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword
+
   };
   res.cookie("user_id", randomID);
   res.redirect("/urls");
-  console.log(users);
 });
 
 //--------------------------------LOGIN-------------------------------
@@ -161,7 +205,7 @@ app.post("/login", (req, res) => {
   }
 
   //if the password that is given does not equal the password stored
-  if (user.password !== req.body.password){
+  if (!bcrypt.compareSync(req.body.password, user.password)){
     res.status(403).send('Incorrect password');
     return
   }
@@ -175,22 +219,6 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
   res.redirect("/urls");
-});
-
-//---------------------------------DELETE--------------------------------
-
-app.post("/urls/:id/delete", (req, res) =>{
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls")
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
 });
 
 
