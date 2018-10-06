@@ -5,40 +5,38 @@
 <body>
 
 
-      <% if (urls.userID) { %>
+      <% if (!user) { %>
+          <h2>Not Logged In</h2>
+          <p> You are not logged in. In order to view your URLS. Please <a href="/login"> Login. </a> </p>
 
-        <h2>Not Logged In</h2>
-
-        <p> You are not logged in. In order to view your URLS. Please <a href="/login"> Login. </a> </p>
-
-      <% } %>
-<ul>
+      <% } else { %>
+        <ul>
 
 
-      <% for (var key in urls) { %>
+            <% for (var key in urls) { %>
 
 
 
-        <li> <%= key %> --->  <a href="<%= urls[key].longURL %>"> <%= urls[key].longURL %> </a>
+              <li> <%= key %> --->  <a href="<%= urls[key].longURL %>"> <%= urls[key].longURL %> </a>
 
-          <form method="POST" action="/urls/<%= key %>/delete"> <button type="submit" class="btn btn-primary">Delete</button> </form>
-          <form method="POST" action="/urls/<%= key %>"> <button type="submit" class="btn btn-primary">Edit</button>
-          </form>
-
-
-
-        </li>
+                <form method="POST" action="/urls/<%= key %>/delete"> <button type="submit" class="btn btn-primary">Delete</button> </form>
+                <form method="GET" action="/urls/<%= key %>"> <button type="submit" class="btn btn-primary">Edit</button>
+                </form>
 
 
 
-      <% }; %>
+              </li>
 
 
 
-  </ul>
+            <% }; %>
 
-  <p> <a href="/urls/new"> Shorten a URL </a></p>
 
+
+        </ul>
+
+      <p> <a href="/urls/new"> Shorten a URL </a></p>
+    <% } %>
 </body>
 </html>
 
